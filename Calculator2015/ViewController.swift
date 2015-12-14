@@ -11,7 +11,7 @@ import UIKit
 class ViewController: UIViewController {
 
     @IBOutlet weak var display: UILabel!
-    var isInTheMiddleOfTypingANumber: Bool! = false
+    var isInTheMiddleOfTypingANumber = false
     
     
     @IBAction func pressedDigit(sender: UIButton) {
@@ -26,6 +26,59 @@ class ViewController: UIViewController {
         }
     }
     
+    var operandStack = Array<Double>()
+    var displayValue: Double {
+        get {
+            return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
+        }
+        set {
+            display.text = "\(newValue)"
+            isInTheMiddleOfTypingANumber = false
+        }
+    }
+    
+    @IBAction func enter() {
+        isInTheMiddleOfTypingANumber = false
+        operandStack.append(displayValue)
+        print("stack = \(operandStack)")
+    }
+    
+    @IBAction func operate(sender: UIButton) {
+        let operation = sender.currentTitle!
+        if isInTheMiddleOfTypingANumber
+        {
+            enter()
+        }
+        switch operation
+        {
+        case "×": performOperation { $1 * $0 }
+        case "÷": performOperation { $1 / $0 }
+        case "-": performOperation { $1 - $0 }
+        case "+": performOperation { $1 + $0 }
+        case "√": performOperation1 { sqrt($0) }
+            
+        default: break
+        }
+    }
+    
+    func performOperation(operation: (Double, Double) -> Double)
+    {
+        if operandStack.count >= 2
+        {
+            displayValue = operation(operandStack.removeLast(), operandStack.removeLast())
+            enter()
+        }
+    }
+    
+    func performOperation1(operation: Double -> Double)
+    {
+        if operandStack.count >= 1
+        {
+            displayValue = operation(operandStack.removeLast())
+            enter()
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
